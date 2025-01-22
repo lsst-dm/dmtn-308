@@ -4,7 +4,7 @@ Database Platform Comparison for the Prompt Products Database (PPDB)
 
 .. abstract::
 
-   This note provides a comparison of database platform options for implementing the Prompt Products Database (PPDB). Requirements are described in detail, followed by a breakdown of the capabilities of each database platform for each requirement. Finally, recommendations are provided based on the comparison.
+   This note provides a comparison of database platforms for implementing the Prompt Products Database (PPDB). Requirements are described in detail, followed by a breakdown of the capabilities of each database platform for each requirement. Finally, recommendations are provided based on the comparison.
 
 Overview
 ========
@@ -13,7 +13,7 @@ The Prompt Products Database (PPDB) will provide user access to level 1 data pro
 The specifics of these data products, including the conceptual schemas, are covered in Section 3 of the `Data Products Definition Document <https://lse-163.lsst.io/>`_ .
 Additionally, several tech notes have been written on specific aspects of the PPDB, including `DMTN-113`_ :cite:`DMTN-113`, `DMTN-268`_ :cite:`DMTN-268`, and `DMTN-293`_ :cite:`DMTN-293`.
 These have covered performance of a PostgreSQL-based PPDB implementation, data ingestion, and system architecture, respectively.
-The exact database platform used to implement the PPDB has not been determined, and this note provides a comparison of the alternatives.
+The database platform which should be used to implement the PPDB has not been determined though, and this note provides a comparison of the alternatives, as well as recommendations on which platforms could be used.
 
 Requirements
 ============
@@ -22,8 +22,9 @@ Deployment
 ----------
 
 Two basic options exist for deploying the PPDB: on-premises or in the cloud.
-The on-premises solution would be deployed at the `US Data Facility <https://usdf-rsp.slac.stanford.edu/>`_ (USDF) at SLAC, where the Alert Production Database (APDB) is currently hosted.
-Cloud deployments would use `Google Cloud Platform <https://cloud.google.com/>`_ (GCP), as this is Rubin's contracted service provider.
+An on-premises solution would be deployed at the `US Data Facility <https://usdf-rsp.slac.stanford.edu/>`_ (USDF) at SLAC, where the Alert Production Database (APDB) is currently hosted.
+Cloud deployments would use `Google Cloud Platform <https://cloud.google.com/>`_ (GCP), as Google is Rubin's contracted service provider.
+For this reason, database services on other cloud platforms such as Amazon Web Services (AWS) or Microsoft Azure are not considered.
 The choice of deployment platform will have a significant impact on the overall cost and complexity of the system.
 
 Data Volume & Retention
@@ -31,7 +32,7 @@ Data Volume & Retention
 
 The Alert Production Database (APDB) is designed to retain data for a 1-year period.
 The PPDB would ideally retain data for the lifetime of the project, which is currently planned at 10 years of survey operations.
-Based on scheduling considerations of Data Release Processing (DRP), a data retention of 2 years will be considered as a minimum requirement.
+Based on scheduling considerations of Data Release Processing (DRP), a data retention of 2 years will be considered as a minimum requirement, with a goal of 10 years.
 
 .. TODO: Include some additional information on why a 2-year data retention will be considered a minimum.
 
@@ -47,22 +48,22 @@ Based on scheduling considerations of Data Release Processing (DRP), a data rete
    * - **10 Years**
      - 700 TB
 
-The above table provides estimates of stored data volume for the PPDB across various time periods.
-The exact size of the nightly data products which will be produced by LSSTCam is undetermined.
+The above table provides estimated data volumes for the PPDB across various time periods.
+The exact size of the nightly data products which will be produced by LSSTCam is undetermined but can be roughly estimated based on the size of ComCam data products.
 Data taking during the `ComCam On-Sky Campaign <https://sitcomtn-149.lsst.io/>`_ resulted in an average size per visit of approximately 9 MB with 9 active detectors.
 Extrapolating to the full camera with 189 detectors results in an estimated single visit size of *189/9 * 9 MB = ~190 MB*.
-Since LSSTCam is expected to produce approximately 1000 visits per night, this would result in a nightly data volume of approximately 190 GB.
+Since LSSTCam is expected to produce approximately 1000 visits per night, this would result in a nightly data volume of around 190 GB.
 
 These figures are almost certainly underestimated, because ComCam data processing resulted in sparse data products containing many `null` values.
 Actual LSSTCam data products will likely be denser, and this density is expected to increase over time as pipeline algorithms are improved and more columns are filled.
-Additionally, `Solar System Processing <https://dp0-3.lsst.io/data-products-dp0-3/solar-system-processing-pipeline.html>`_ (SSP) was not run during the previously mentioned ComCam operations, and this would be expected to increase data volumes by an unknown factor.
+Additionally, `Solar System Processing <https://dp0-3.lsst.io/data-products-dp0-3/solar-system-processing-pipeline.html>`_ (SSP) was not included in AP pipeline processing runs during ComCam operations, and this would be expected to increase data volumes by an unknown factor.
 
 Query Performance & Latency
 ---------------------------
 
 Query performance, including the latency of returning results to a client, is a complex and multi-dimensional topic, depending on a multitude of physical factors such as hardware configuration, network latency, memory, and disk I/O.
 Additionally, query complexity and the number of concurrent queries effecting the system load can have a significant impact.
-The primary consideration in evaluating this metric is whether or not a given database platform can potentially meet the needs of the use case.
+The primary consideration in evaluating query performance and latency will be whether or not a given database platform can potentially meet the needs of the use case.
 
 Query performance requirements for the PPDB are covered by *DMS-REQ-0355* in the `Data Management System Requirements <https://ls.st/LSE-61>`_.
 These specify that the minimum number of simultaneous users should be 20, and that the maximum query time should be 10 seconds.
@@ -73,42 +74,43 @@ Scalability
 -----------
 
 Scalability is a multi-dimensional metric, including the ability to scale out horizontally to handle large data volumes and high query loads.
-While specific aspects of scalability are covered by other requirements, it is worth discussing and characterizing the overall scalability of each database platform.
+While specific aspects of scalability are also covered by other requirements, it is worth discussing and characterizing the overall scalability of each database platform.
 The system should be able to handle the expected data volume and query load with as little latency as possible.
+Ideally, system resoures could be reclaimed or provisioned on-the-fly to meet demand, but this is not a strict requirement.
 
 Total Cost of Ownership (TCO)
 -----------------------------
 
-Total cost of ownership will include operating expenditures from running the database, such as those from storage, compute, and networking, as well as capital expenditure on hardware purchases.
-Development and maintenance costs in terms of personnel time are not considered under this topic but could vary significantly depending on the platform chosen; these are discussed in more detailed under "Maintenance Overhead" and "Developer Effort".
+Total cost of ownership may include operating expenses, such as those from storage, compute, and networking, as well as capital expenditure on hardware purchases for on-premises deployments.
+Development and maintenance costs in terms of personnel time are not considered under this topic but could vary significantly depending on the platform chosen and may be non-negligible; these are alluded to in the "Maintenance Overhead" and "Developer Effort" requirements.
 Hardware purchase costs are considered and discussed for on-premises deployments, but specific dollar amounts are not provided.
 For on-premises deployment, it is assumed that cooling, power, and networking are already covered by existing infrastructure and budget.
-Cloud deployments will include discussion of billing from running the database platform, but, again, specific dollar amounts are not provided here.
-We will simply attempt to characterize the relative costs of each platform.
+Cloud deployments will include some discussion of service billing, but specific dollar amounts are not provided here.
+An attempt will be made to characterize the relative costs of each platform.
 
 Cost Predictability
 -------------------
 
-As a general rule, cloud deployments are less predictable in terms of operating costs than on-premises deployments.
-The cost of running a database on GCP can vary depending on the amount of data stored, the number of queries run, and the amount of data transferred.
-On-premises deployments will likely have fixed costs that can be calculated accurately in-advance, e.g., hardware purchases, but may also include some additional variable costs.
-
-.. TODO: What variable costs for on-premises deployments should be considered?
+As a general rule, cloud deployments are less predictable in terms of operating costs than on-premises.
+The cost of running a database on the cloud can vary depending on the amount of data stored, the number of queries run, and the amount of data transferred.
+On-premises deployments will likely have fixed costs that can be calculated accurately in-advance, e.g., hardware purchases.
+It is assumed that the cost of running the database on-premises at the USDF would be covered by existing infrastructure and budget.
 
 Maintenance Overhead
 --------------------
 
-Large, distributed databases generally require a significant amount of administrative effort to keep them running smoothly and efficiently.
+Large, distributed databases can require a significant amount of administrative effort to keep them running smoothly and efficiently.
 This typically includes monitoring, backup and recovery, and periodic maintenance operations such as storage vacuuming and index rebuilding.
-On-premises deployments require personnel to manage the infrastructure, while at least some of this burden is shifted to the provider in a cloud deployment.
+On-premises deployments would require personnel to manage the low-level infrastructure, while at least some of this burden is shifted to the provider in a cloud deployment.
 Maintenance and development efforts may overlap significantly, especially in the early stages of building out the platform.
 
 Developer Effort
 ----------------
 
-Significant development effort may be required, depending on the database platform chosen.
-This includes development of the database schema, data ingestion tools and TAP service, as well as deployment and monitoring tools.
-Additionally, some options may require more effort on developer operations (devops) for the database platform itself, such as development of Kubernetes operators or Helm charts, in particular, for on-premises deployments where these tools are not already available.
+Significant development effort may be required, depending on the database platform, including development of the database schema, data ingestion tools, TAP service, deployment code and monitoring tools.
+The TAP service and data ingestion are broken out into their own requirements, as these are both potentially significant development efforts.
+Additionally, some options may require more effort in developer operations (devops), such as development of Kubernetes operators or Helm charts.
+This is more likely to be necessary for implementing an on-premises system, as cloud providers typically have their own tools and services to manage the deployment and scaling of databases.
 
 TAP Service
 -----------
@@ -117,20 +119,20 @@ User access to the PPDB will be provided by an `IVOA TAP service <https://www.iv
 The availability of a compatible TAP service will be a significant factor in the decision of which platform to use.
 Some of the database platforms do not have a compatible TAP implementation and may require significant effort to either develop a new implementation or adapt an existing one.
 The `CADC TAP service <https://github.com/opencadc/tap>`_` runs on top of PostgreSQL and has been used for some existing Rubin services.
-PostgreSQL compatibility is a significant advantage in this regard.
+PostgreSQL compatibility of the potential platform is a significant advantage in this regard.
 
 The TAP service must support spherical geometry operations, which are used in ADQL queries.
 For PostgreSQL databases, this is currently provided by the `PgSphere extension <https://pgsphere.github.io/>`_.
 When using non-spherical spatial indexing, such as that provided by `PostGIS <https://postgis.net/>`_, it is typically necessary to apply a "cut" to the data returned by the spatial index in order to ensure that only the correct values are returned.
-Implementing these operations can be non-trivial and may require significant development effort to implement correctly and test thoroughly, if this type of spatial indexing is used rather than spherical geometry.
+Implementing these operations can be non-trivial and may require significant development effort to implement correctly and test thoroughly, if this type of spatial indexing is used rather than spherical geometry and a suitable adapter does not exist.
 
 Data Ingestion
 --------------
 
 The PPDB will ingest data from the APDB on a nightly basis and must make this data available for user querying within 24 hours.
-This ingestion process is currently implemented as a continueous "daemon" process which writes Parquet files to disk from the APDB and then copies them over the network to a target PostgreSQL database using the `COPY` command.
+The data ingestion is currently implemented as a long-running "daemon" process which writes Parquet files to disk from the APDB and then copies them over the network to a target PostgreSQL database using the `COPY` command.
 We will primarily consider whether a given platform can support the existing data ingestion tools, and, if not, what additional development effort would be required in order to implement this functionality.
-The potential performance of data ingestion will be difficult to estimate if there is not an existing solution which can be tested and benchmarked, so this is not specifically considered in this document in terms of comparing the platforms.
+The potential performance of data ingestion will be difficult to estimate if there is not an existing solution which can be tested and benchmarked, so this is not specifically considered in this document in terms of comparing the platforms but could also be a significant factor in decision-making.
 
 Ecosystem and Community
 -----------------------
@@ -142,7 +144,7 @@ A large ecosystem and community can provide valuable resources and support for d
 Database platforms
 ==================
 
-Given the requirements outlined above, the following database platforms are considered:
+Given the requirements outlined above, the following database platforms are initially considered:
 
 PostgreSQL
 ----------
@@ -173,13 +175,13 @@ It is typically configured using a primary and replica setup, with the primary n
 BigQuery
 --------
 
-`BigQuery <https://cloud.google.com/bigquery>`_ is a fully managed, serverless data warehouse that is designed to scale out horizontally.
-It is designed to handle huge data volume and is optimized for fast query performance on such datasets.
+`BigQuery <https://cloud.google.com/bigquery>`_ is a fully managed, serverless data warehouse that is designed for extreme horizonatal scalability.
+It can handle huge data volumes and is optimized for fast response of analytical queries on massive datasets.
 
 Platform Comparison
 ===================
 
-The following table provides an initial comparison of the database platforms based on the above requirements.
+The following table provides a comparison of the database platforms based on the above requirements.
 
 .. Color coding
 .. role:: red
@@ -229,7 +231,7 @@ The following table provides an initial comparison of the database platforms bas
      - :green:`High`
      - :green:`High`
      - :yellow:`Medium`
-     - :red:`Very High`
+     - :green:`Very High`
 
    * - **TCO**
      - :green:`Low`
@@ -285,8 +287,8 @@ Deployment
 
 We assume that single server PostgreSQL, Citus, and Qserv would all run on-premises at the USDF.
 AlloyDB and BigQuery are cloud-native platforms that would run on GCP.
-While the on-premises solutions could technically be deployed on GCP, we do not consider these scenarios here.
-AlloyDB also has an on-premises option, but we do not consider this either.
+While the on-premises solutions could technically be deployed on the cloud, we do not consider those scenarios here.
+AlloyDB has an on-premises option, but we do not consider this either.
 Finally, BigQuery is cloud-native with no on-premises option.
 
 PostgreSQL
@@ -295,6 +297,7 @@ PostgreSQL
 - PostgreSQL can be deployed on-premises at the USDF, where it is currently already being used for development and testing of the PPDB.
 - `CloudNativePG <https://cloudnative-pg.io/>`_ has been used at USDF to deploy PostgreSQL on Kubernetes, including some existing PostgreSQL servers used for PPDB development.
   - This provides a suite of tools for managing PostgreSQL on Kubernetes, including monitoring, backup and recovery, and scaling.
+- Maintenance and administration of PostgreSQL instances seems to be well-understood and managed at the USDF, with a dedicated team of system administrators who manage the infrastructure, primarily on Kubernetes.
 
 Citus
 ~~~~~
@@ -792,7 +795,7 @@ Given the information present above, we provide the following ordered recommenda
 Of all the platforms, BigQuery offers the most attractive featureset and has been designed from the ground-up to provide unlimited scaling of compute and storage resources.
 It is a fully managed service, with low maintenance overhead, and has excellent scalability and query performance.
 
-BigQuery has been tested in the past by Rubin staff and results reported in "Google Cloud Engagement Results" :cite:`DMTN-125`.
+BigQuery has been tested in the past by Rubin staff with results reported in "Google Cloud Engagement Results" :cite:`DMTN-125`.
 
   The results for BigQuery show significant speedups for queries that retrieve a limited number of columns, as expected due to BigQuery’s columnar organization. Spherical geometry primitives were able to be adapted for use in astronomical queries. Proper data organization, in particular clustering the BigQuery tables by spatial index, along with the use of a spatial restriction primitive led to substantial improvements in query time for a near-neighbor query. Retrieval of individual objects was relatively slow, however, due to BigQuery’s startup time and lack of indexing. It seems clear that it is possible, with some work on ADQL (Astronomical Data Query Language) translation and possibly creation of auxiliary tables, for BigQuery to handle the largest-scale catalog queries.
 
@@ -823,6 +826,13 @@ Qserv can handle the data volume and query performance requirements, so it shoul
 But the required developer effort for new tooling and capabilities is very high, and the existing ecosystem and community are limited.
 The existing commitments of the Qserv team may also prevent them from devoting the necessary resources to develop the required tooling on a reasonable timescale.
 For these reasons, it is not recommended as a primary option for the PPDB.
+
+4. Interim solution
+-------------------
+
+Given the constraints and requirements, it may be necessary to provide an interim solution using existing PostgreSQL-based tooling.
+This would allow the PPDB to be operational in a timely manner, while the longer-term solution is developed and deployed.
+Software has already been developed for data ingestion, which has been tested and found to be reliable, stable, and sufficiently performant.
 
 .. _DMTN-113: https://dmtn-113.lsst.io
 .. _DMTN-125: https://dmtn-125.lsst.io
