@@ -319,12 +319,16 @@ Qserv
 AlloyDB
 ~~~~~~~
 
-.. TODO
+- AlloyDB is a cloud-native platform that runs on GCP.
+- Tools are provided for monitoring, backup and recovery, and scaling through a web interface.
+- Deployment on GCP would require provisioning of resources through the GCP console or API, and configuration of the database through the web interface.
 
 BigQuery
 ~~~~~~~~
 
-.. TODO
+- BigQuery is a cloud-native platform that runs on GCP.
+- It is a fully managed, serverless data warehouse that requires no infrastructure management.
+- Some database operations still need to be configured and managed, such as backups.
 
 Data Volume & Retention
 -----------------------
