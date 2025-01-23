@@ -797,8 +797,8 @@ BigQuery
 - The cost of running the service is unknown, and it is possible that the service could incur high operating costs, which would grow over time with more data and queries.
 - **BigQuery is a good fit in terms of scalability and query performance, but the developer effort required to migrate to this platform is significant, and the cost of running the service is unknown.**
 
-Conclusions
-============
+Recommendations
+===============
 
 Given the information which has been presented, the following ordered recommendations are provided:
 
