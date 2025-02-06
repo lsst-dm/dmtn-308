@@ -267,7 +267,7 @@ The following table provides a comparison of the database platforms based on the
      - :green:`Fully Supported`
      - :green:`Fully Supported`
      - :red:`Not Supported`
-     - :red:`Not Supported`
+     - :yellow:`In Progress`
 
    * - **Data Ingestion**
      - :green:`Fully Supported`
