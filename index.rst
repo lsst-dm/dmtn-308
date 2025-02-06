@@ -848,15 +848,19 @@ The existing commitments of the Qserv team might prevent them from devoting the 
 The ecosystem and community are also quite limited.
 For these reasons, Qserv is not recommended as a primary option, though in terms of technical capability, it could be a viable choice.
 
-4. Interim solution
+4. Interim Solution
 -------------------
 
 Given the constraints and requirements, it may be necessary to provide an interim solution using existing PostgreSQL-based tooling.
 This would allow the PPDB to be operational in a timely manner, while the longer-term solution is developed and deployed.
 Software has already been developed for data ingestion, which has been tested and found to be reliable, stable, and sufficiently performant at high data volumes.
 Additionally, a TAP service could be configured and deployed to the RSP with minimal effort.
-Vertical scaling could be used to address performance requirements initially, though from the preceeding discussion, it should be clear that this is not a viable long-term solution given the expected data volumes.
+Vertical scaling could be used to address performance requirements initially.
 This scheme would at least provide a working system that would allow the PPDB to be operational in a timely manner.
+
+However, there are major issues with this approach, as PostgreSQL may struggle with query loads at a much lower data volume than would be expected even just for the first few months of operations.
+Certainly, after several months of operations when the data volume is expected to exceed 100 TB, the system would likely be unable to handle the query load without unacceptable latency.
+Vertical scaling or other stopgap measures would only be able to address this issue for a limited time, and the system would likely need to be replaced or significantly reconfigured well within a year of deployment, and likely much sooner.
 
 .. _DMTN-113: https://dmtn-113.lsst.io
 .. _DMTN-125: https://dmtn-125.lsst.io
