@@ -9,11 +9,12 @@ Database Platform Comparison for the Prompt Products Database (PPDB)
 Overview
 ========
 
-The Prompt Products Database (PPDB) will provide user access to level 1 data products, which are produced as a result of nightly processing.
-The specifics of these data products, including the conceptual schemas, are covered in Section 3 of the Data Products Definition Document :cite:`LSE-163`.
-Additionally, several tech notes have been written on specific aspects of the PPDB, including DMTN-113 :cite:`DMTN-113`, DMTN-268 :cite:`DMTN-268`, and DMTN-293 :cite:`DMTN-293`.
+The Prompt Products Database (PPDB) will provide user access to level 1 data products, which are produced as a result of nightly processing by the Alert Production (AP) pipeline.
+The PPDB is a data catalog which does not include images or other raw data products that would typically be accessed using the Data Butler or other services.
+The specifics of these catalogs, including the conceptual schemas, are covered in Section 3 of the Data Products Definition Document :cite:`LSE-163`.
+Additionally, several tech notes have been written on aspects of the PPDB, including DMTN-113 :cite:`DMTN-113`, DMTN-268 :cite:`DMTN-268`, and DMTN-293 :cite:`DMTN-293`.
 These have covered performance of a PostgreSQL-based PPDB implementation, data ingestion, and system architecture, respectively.
-The database platform which should be used to implement the PPDB has not been determined though, and this note provides a comparison of the alternatives, as well as recommendations on which platforms could be used.
+The database platform which should be used to implement the PPDB has yet to be determined, and this note provides a comparison of various  alternatives and concludes with recommendations on which seem to be most suitable for the project.
 
 Requirements
 ============
