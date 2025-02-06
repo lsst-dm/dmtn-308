@@ -143,7 +143,7 @@ The ecosystem and community around the database platform are important factors t
 This includes availability of documentation, tutorials, and support forums, as well as the number of developers and companies using the platform.
 A large ecosystem and community can provide valuable resources and support for developers, as well as a wide range of tools and libraries that can be used to extend the functionality of the database platform.
 
-Database platforms
+Database Platforms
 ==================
 
 Given the requirements outlined above, the following database platforms are initially considered:
@@ -480,6 +480,7 @@ AlloyDB
 - AlloyDB uses a primary and replica setup, with the primary node handling writes and the replica nodes handling reads. This allows AlloyDB to scale out horizontally to multiple nodes.
 - AlloyDB does not sufficiently scale in terms of storage capacity, as it has a (previously mentioned) maximum storage capacity of 128 TiB per primary instance.
 - This platform does not have true horizontal scalability, as it uses a primary and replica setup, which is not the same as sharding data across multiple nodes.
+- Query volume scaling could be achieved by adding read replicas, but this would not address the storage capacity limitations. Additionally, read replicas require storing the data multiple times, which could be expensive.
 - **AlloyDB likely does not have sufficient scalability for the PPDB.**
 
 BigQuery
