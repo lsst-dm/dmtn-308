@@ -64,7 +64,7 @@ Query Performance & Latency
 ---------------------------
 
 Query performance, including the latency of returning results to a client, is a complex and multi-dimensional topic, depending on a multitude of physical factors such as hardware configuration, network latency, memory, and disk I/O.
-Additionally, query complexity and the number of concurrent queries effecting the system load can have a significant impact.
+Additionally, query complexity and the number of concurrent queries affecting the system load can have a significant impact.
 The primary consideration in evaluating query performance and latency will be whether or not a given database platform can potentially meet the needs of the use case.
 
 Query performance requirements for the PPDB are covered by *DMS-REQ-0355* in the `Data Management System Requirements <https://ls.st/LSE-61>`_.
