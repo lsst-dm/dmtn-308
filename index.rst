@@ -226,7 +226,7 @@ The following table provides a comparison of the database platforms based on the
      - :green:`Low to Medium`
      - :yellow:`Medium`
      - :green:`Low`
-     - :red:`High`
+     - :green:`Low`
 
    * - **Scalability**
      - :red:`Low`
