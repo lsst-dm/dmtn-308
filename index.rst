@@ -293,6 +293,13 @@ While the on-premises solutions could technically be deployed on the cloud, we d
 AlloyDB has an on-premises option, but we also do not consider this.
 Finally, BigQuery is cloud-native with no on-premises option.
 
+There are a number of important trade-offs to consider when choosing between on-premises and cloud deployments.
+Cloud solutions generally have much better elasticity and scalability, often through features which are built into the services.
+However, this flexibility can result in higher operating costs as resources are provisioned and de-provisioned on the fly.
+Massively scalable cloud-native platforms like BigQuery offer nearly unlimited scalability, but this can result in similarly unbounded financial costs.
+On-premises deployments do not generally offer this level of flexibility because of infrastructuer limitations, especially when hardware is specifically provisioned for a given application; these clusters typically do not include enough spare capacity to scale out in an unlimited fashion as might a cloud-native platform.
+But on-premises deployments will generally have higher cost predictability, as once dedicated hardware is paid for and installed, operating costs would presumably be covered by existing infrastructure and budget.
+
 PostgreSQL
 ~~~~~~~~~~
 
