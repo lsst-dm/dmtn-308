@@ -28,6 +28,14 @@ Cloud deployments would use `Google Cloud Platform <https://cloud.google.com/>`_
 For this reason, database services on other cloud platforms such as Amazon Web Services (AWS) or Microsoft Azure are not considered.
 The choice of deployment platform will have a significant impact on the overall cost and complexity of the system.
 
+There are a number of important trade-offs to consider when choosing between on-premises and cloud deployments.
+Cloud solutions generally have much better elasticity and scalability, often through features which are built into the services.
+However, this flexibility can result in higher operating costs as resources are provisioned and de-provisioned on the fly.
+Massively scalable cloud-native platforms like BigQuery offer nearly unlimited scalability, but this can result in similarly unbounded financial costs.
+On-premises deployments do not generally offer this level of flexibility because of infrastructure and purchasing limitations, especially when hardware is specifically provisioned for a given application; these clusters typically do not include enough spare capacity to scale out in an unlimited fashion as might a cloud-native platform.
+If on-premises systems are designed to handle maximum load, then the classic problem of overprovisioning arises, where resources are underutilized during normal operation.
+On the other hand, on-premises deployments will generally have higher cost predictability, as once dedicated hardware is paid for and installed, operating costs would presumably be covered by existing infrastructure and budget.
+
 Data Volume & Retention
 -----------------------
 
@@ -106,6 +114,10 @@ Large, distributed databases can require a significant amount of administrative 
 This typically includes monitoring, backup and recovery, and periodic maintenance operations such as storage vacuuming and index rebuilding.
 On-premises deployments would require personnel to manage the low-level infrastructure, while at least some of this burden is shifted to the provider in a cloud deployment.
 Maintenance and development efforts may overlap significantly, especially in the early stages of building out the platform.
+
+.. TODO: Add discussion of database migrations and upgrades
+
+.. TODO: Add discussion of database backups and restoration
 
 Developer Effort
 ----------------
@@ -292,13 +304,6 @@ AlloyDB and BigQuery are cloud-native platforms that run on GCP.
 While the on-premises solutions could technically be deployed on the cloud, we do not consider those scenarios here.
 AlloyDB has an on-premises option, but we also do not consider this.
 Finally, BigQuery is cloud-native with no on-premises option.
-
-There are a number of important trade-offs to consider when choosing between on-premises and cloud deployments.
-Cloud solutions generally have much better elasticity and scalability, often through features which are built into the services.
-However, this flexibility can result in higher operating costs as resources are provisioned and de-provisioned on the fly.
-Massively scalable cloud-native platforms like BigQuery offer nearly unlimited scalability, but this can result in similarly unbounded financial costs.
-On-premises deployments do not generally offer this level of flexibility because of infrastructuer limitations, especially when hardware is specifically provisioned for a given application; these clusters typically do not include enough spare capacity to scale out in an unlimited fashion as might a cloud-native platform.
-But on-premises deployments will generally have higher cost predictability, as once dedicated hardware is paid for and installed, operating costs would presumably be covered by existing infrastructure and budget.
 
 PostgreSQL
 ~~~~~~~~~~
