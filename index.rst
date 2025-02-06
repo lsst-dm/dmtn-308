@@ -6,13 +6,13 @@ Database Platform Comparison for the Prompt Products Database (PPDB)
 
    This note provides a comparison of database platforms for implementing the Prompt Products Database (PPDB). Requirements are described in detail, followed by a breakdown of the capabilities of each database platform for each requirement. Finally, recommendations are provided based on the comparison.
 
-Overview
-========
+Introduction
+============
 
 The Prompt Products Database (PPDB) will provide user access to level 1 data products, which are produced as a result of nightly processing by the Alert Production (AP) pipeline.
 The PPDB is a data catalog which does not include images or other raw data products that would typically be accessed using the Data Butler or other services.
 The specifics of these catalogs, including the conceptual schemas, are covered in Section 3 of the Data Products Definition Document :cite:`LSE-163`.
-Additionally, several tech notes have been written on aspects of the PPDB, including DMTN-113 :cite:`DMTN-113`, DMTN-268 :cite:`DMTN-268`, and DMTN-293 :cite:`DMTN-293`.
+Additionally, several tech notes have been written on aspects of the PPDB, including *DMTN-113* :cite:`DMTN-113`, *DMTN-268* :cite:`DMTN-268`, and *DMTN-293* :cite:`DMTN-293`.
 These have covered performance of a PostgreSQL-based PPDB implementation, data ingestion, and system architecture, respectively.
 The database platform which should be used to implement the PPDB has yet to be determined, and this note provides a comparison of various  alternatives and concludes with recommendations on which seem to be most suitable for the project.
 
@@ -68,7 +68,7 @@ Query performance, including the latency of returning results to a client, is a 
 Additionally, query complexity and the number of concurrent queries affecting the system load can have a significant impact.
 The primary consideration in evaluating query performance and latency will be whether or not a given database platform can potentially meet the needs of the use case.
 
-Query performance requirements for the PPDB are covered by *DMS-REQ-0355* in the Data Management System Requirements :cite:`LSE-61`.
+Query performance requirements for the PPDB are covered by *DMS-REQ-0355* in the *Data Management System Requirements* :cite:`LSE-61`.
 These specify that the minimum number of simultaneous users should be 20, and that the maximum query time should be 10 seconds.
 Given the expected data volumes, longer queries may be necessary to extract the desired information from the system, so the latter requirement may not be satisfiable in all cases.
 The PPDB is expected to be used by a large number of users, and this may vary considerably depending on the time of day, the phase of the project, and other factors.
@@ -395,7 +395,7 @@ PostgreSQL
    - I/O and memory constraints can become bottlenecks.
    - Performance degrades with high concurrency or large joins across large tables.
    - Index maintenance and vacuum operations can impact performance on large datasets.
-- Internal benchmarking and testing indicates that query performance scales roughly linearly with data volume, with query times increasing by a factor of 10 for every order of magnitude increase in data volume `DMTN-113`_ :cite:`DMTN-113`.
+- Internal benchmarking and testing indicates that query performance scales roughly linearly with data volume, with query times increasing by a factor of 10 for every order of magnitude increase in data volume *DMTN-113* :cite:`DMTN-113`.
    - This implies that performance would degrade significantly as the PPDB grows to hundreds of terabytes.
 - **A single-node PostgreSQL server cannot achieve adequate query performance on the expected data volumes.**
 
@@ -814,7 +814,7 @@ Of all the platforms, BigQuery offers the most attractive featureset in terms of
 It is a fully managed service, with low maintenance overhead, and has excellent scalability and query performance.
 Support could be obtained through Rubin's existing GCP contract, and costs could be negotiated to be more favorable.
 
-A pilot project by Rubin staff used BigQuery as part of "Google Cloud Engagement Results" :cite:`DMTN-125` and reported (tentatively) favorable results.
+A pilot project by Rubin staff used BigQuery as part of *Google Cloud Engagement Results* :cite:`DMTN-125` and reported (tentatively) favorable results.
 
   The results for BigQuery show significant speedups for queries that retrieve a limited number of columns, as expected due to BigQuery’s columnar organization. Spherical geometry primitives were able to be adapted for use in astronomical queries. Proper data organization, in particular clustering the BigQuery tables by spatial index, along with the use of a spatial restriction primitive led to substantial improvements in query time for a near-neighbor query. Retrieval of individual objects was relatively slow, however, due to BigQuery’s startup time and lack of indexing. It seems clear that it is possible, with some work on ADQL (Astronomical Data Query Language) translation and possibly creation of auxiliary tables, for BigQuery to handle the largest-scale catalog queries.
 
