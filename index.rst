@@ -10,8 +10,8 @@ Overview
 ========
 
 The Prompt Products Database (PPDB) will provide user access to level 1 data products, which are produced as a result of nightly processing.
-The specifics of these data products, including the conceptual schemas, are covered in Section 3 of the `Data Products Definition Document <https://lse-163.lsst.io/>`_ .
-Additionally, several tech notes have been written on specific aspects of the PPDB, including `DMTN-113`_ :cite:`DMTN-113`, `DMTN-268`_ :cite:`DMTN-268`, and `DMTN-293`_ :cite:`DMTN-293`.
+The specifics of these data products, including the conceptual schemas, are covered in Section 3 of the Data Products Definition Document :cite:`LSE-163`.
+Additionally, several tech notes have been written on specific aspects of the PPDB, including DMTN-113 :cite:`DMTN-113`, DMTN-268 :cite:`DMTN-268`, and DMTN-293 :cite:`DMTN-293`.
 These have covered performance of a PostgreSQL-based PPDB implementation, data ingestion, and system architecture, respectively.
 The database platform which should be used to implement the PPDB has not been determined though, and this note provides a comparison of the alternatives, as well as recommendations on which platforms could be used.
 
@@ -50,7 +50,7 @@ Based on scheduling considerations of Data Release Processing (DRP), a data rete
 
 The above table provides estimated data volumes for the PPDB across various time periods.
 The exact size of the nightly data products which will be produced by LSSTCam is undetermined but can be roughly estimated based on the size of ComCam data products.
-Data taking during the `ComCam On-Sky Campaign <https://sitcomtn-149.lsst.io/>`_ resulted in an average size per visit of approximately 9 MB with 9 active detectors.
+Data taking during the ComCam On-Sky Campaign :cite:`SITCOMTN-149` resulted in an average size per visit of approximately 9 MB with 9 active detectors.
 Extrapolating to LSSTCam with 189 detectors results in an estimated single visit size of *189/9 * 9 MB = ~190 MB*.
 Since the survey is expected to produce approximately 1000 visits per night, this would result in a nightly data volume of around 190 GB.
 
@@ -67,7 +67,7 @@ Query performance, including the latency of returning results to a client, is a 
 Additionally, query complexity and the number of concurrent queries affecting the system load can have a significant impact.
 The primary consideration in evaluating query performance and latency will be whether or not a given database platform can potentially meet the needs of the use case.
 
-Query performance requirements for the PPDB are covered by *DMS-REQ-0355* in the `Data Management System Requirements <https://ls.st/LSE-61>`_.
+Query performance requirements for the PPDB are covered by *DMS-REQ-0355* in the Data Management System Requirements :cite:`LSE-61`.
 These specify that the minimum number of simultaneous users should be 20, and that the maximum query time should be 10 seconds.
 Given the expected data volumes, longer queries may be necessary to extract the desired information from the system, so the latter requirement may not be satisfiable in all cases.
 The PPDB is expected to be used by a large number of users, and this may vary considerably depending on the time of day, the phase of the project, and other factors.
@@ -861,6 +861,9 @@ This scheme would at least provide a working system that would allow the PPDB to
 .. _DMTN-125: https://dmtn-125.lsst.io
 .. _DMTN-268: https://dmtn-268.lsst.io
 .. _DMTN-293: https://dmtn-293.lsst.io
+.. _LSE-61: https://ls.st/LSE-61
+.. _LSE-163: https://lse-163.lsst.io
+.. _SITCOMTN-149: https://sitcomtn-149.lsst.io
 
 References
 ==========
