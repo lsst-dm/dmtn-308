@@ -9,12 +9,13 @@ Database Platform Comparison for the Prompt Products Database (PPDB)
 Introduction
 ============
 
-The Prompt Products Database (PPDB) will provide user access to level 1 data products, which are produced as a result of nightly processing by the Alert Production (AP) pipeline.
-The PPDB is a data catalog which does not include images or other raw data products that would typically be accessed using the Data Butler or other services.
+The Prompt Products Database (PPDB) will provide user access to prompt data products, which are produced as a result of nightly processing by the Alert Production (AP) pipeline.
 The specifics of these catalogs, including the conceptual schemas, are covered in Section 3 of the Data Products Definition Document :cite:`LSE-163`.
-Additionally, several tech notes have been written on aspects of the PPDB, including *DMTN-113* :cite:`DMTN-113`, *DMTN-268* :cite:`DMTN-268`, and *DMTN-293* :cite:`DMTN-293`.
-These have covered performance of a PostgreSQL-based PPDB implementation, data ingestion, and system architecture, respectively.
-The database platform which should be used to implement the PPDB has yet to be determined, and this note provides a comparison of various  alternatives and concludes with recommendations on which seem to be most suitable for the project.
+This does not include not include images or other raw data products that must be accessed using other services such as the `Data Butler <https://arxiv.org/abs/2206.14941>`_.
+Several tech notes have been written on aspects of the PPDB, including *DMTN-113* :cite:`DMTN-113`, *DMTN-268* :cite:`DMTN-268`, and *DMTN-293* :cite:`DMTN-293`.
+These have discussed performance of an early PostgreSQL-based PPDB implementation, data ingestion, and system architecture, respectively.
+However, there is no definitive set of requirements for the system, detailed design document, or implementation plan.
+The database platform which should be used to implement the PPDB is also yet to be determined, and this note provides a comparison of various alternatives, concluding with recommendations on which seem to be most suitable.
 
 Requirements
 ============
@@ -31,19 +32,17 @@ The choice of deployment platform will have a significant impact on the overall 
 There are a number of important trade-offs to consider when choosing between on-premises and cloud deployments.
 Cloud solutions generally have much better elasticity and scalability, often through features which are built into the services.
 However, this flexibility can result in higher operating costs as resources are provisioned and de-provisioned on the fly.
-Massively scalable cloud-native platforms like BigQuery offer nearly unlimited scalability, but this can result in similarly unbounded financial costs.
+Massively scalable cloud-native platforms like BigQuery offer nearly unlimited scalability, but this feature may result in similarly unbounded and unpredictable financial costs.
 On-premises deployments do not generally offer this level of flexibility because of infrastructure and purchasing limitations, especially when hardware is specifically provisioned for a given application; these clusters typically do not include enough spare capacity to scale out in an unlimited fashion as might a cloud-native platform.
-If on-premises systems are designed to handle maximum load, then the classic problem of overprovisioning arises, where resources are underutilized during normal operation.
+If on-premises systems are designed to handle maximum load, then the classic problem of overprovisioning can occur, in which resources are underutilized during normal operation.
 On the other hand, on-premises deployments will generally have higher cost predictability, as once dedicated hardware is paid for and installed, operating costs would presumably be covered by existing infrastructure and budget.
 
 Data Volume & Retention
 -----------------------
 
-The Alert Production Database (APDB) is designed to retain data for a 1-year period.
+The Alert Production Database (APDB) is designed to retain data within a 1-year window, which is described under bullets 6 and 9 in section 3.2.1 of the *Data Products Definition Document* :cite:`LSE-163`.
 The PPDB would ideally retain data for the lifetime of the project, which is currently planned at 10 years of survey operations.
-Based on scheduling considerations of Data Release Processing (DRP), a data retention of 2 years will be considered as a minimum requirement, with a goal of 10 years.
-
-.. TODO: Include some additional information on why a 2-year data retention will be considered a minimum.
+Based on scheduling considerations of Data Release Processing (DRP) and the resultant availability of data products, a data retention of 2 years will be considered as a minimum requirement, with a goal of 10 years.
 
 .. list-table:: Data Volume Projections
    :header-rows: 1
@@ -61,13 +60,15 @@ The above table provides estimated data volumes for the PPDB across various time
 The exact size of the nightly data products which will be produced by LSSTCam is undetermined but can be roughly estimated based on the size of ComCam data products.
 Data taking during the ComCam On-Sky Campaign :cite:`SITCOMTN-149` resulted in an average size per visit of approximately 9 MB with 9 active detectors.
 Extrapolating to LSSTCam with 189 detectors results in an estimated single visit size of *189/9 * 9 MB = ~190 MB*.
-Since the survey is expected to produce approximately 1000 visits per night, this would result in a nightly data volume of around 190 GB.
+Since the survey is expected to produce approximately 1000 visits per night, this results in a predicted nightly data volume of around 190 GB.
 
 These figures are almost certainly underestimated, because ComCam data processing resulted in sparse data products containing many `null` values.
 Actual LSSTCam data products will likely be denser, and this density is expected to increase over time as pipeline algorithms are improved and more columns are filled.
 Additionally, `Solar System Processing <https://dp0-3.lsst.io/data-products-dp0-3/solar-system-processing-pipeline.html>`_ (SSP) was not included in AP pipeline processing runs during ComCam operations, and this would be expected to increase data volumes by an unknown factor.
 
-.. In general, updates to the AP pipeline algorithms could have a significant impact on data volumes, making them either higher or lower than estimated, but these are also not accounted for in the above estimates.
+The numbers presented here also represent a significant increase over previously predicted values, such as those used in *DMTN-135* :cite:`DMTN-135`, which estimated a yearly data volume of 24 TB for the APDB.
+(This was before the APDB and PPDB were split apart as separate projects with the PPDB designed to handle user queries of prompt data products.)
+These estimates were derived from *DMTN-113* :cite:`DMTN-113`, but the data schemas and processing algorithms have changed significantly since that time, and the new estimates are based on more recent data and processing runs.
 
 Query Performance & Latency
 ---------------------------
@@ -96,13 +97,13 @@ Total cost of ownership may include operating expenses, such as those from stora
 Development and maintenance costs in terms of personnel time are not specifically quantified but could vary significantly depending on the platform chosen and may be non-negligible.
 Hardware purchase costs are considered and discussed for on-premises deployments, but specific dollar amounts are not provided.
 For on-premises deployment, it is assumed that cooling, power, and networking are already covered by existing infrastructure and budget.
-Cloud deployments will include some discussion of service billing, but specific dollar amounts also not provided.
+Cloud deployments will include some discussion of billing from operating costs, but specific dollar amounts are also not provided.
 An attempt will be made to characterize the relative costs of each platform rather than provide specific dollar amounts.
 
 Cost Predictability
 -------------------
 
-As a general rule, cloud deployments are less predictable in terms of operating costs than on-premises ones.
+As a general rule, cloud deployments are less predictable in terms of operating costs than for on-premises.
 The cost of running a database on the cloud can vary depending on the amount of data stored, the number of queries run, and the amount of data transferred.
 On-premises deployments would likely incur fixed costs that could be calculated accurately in-advance, e.g., hardware purchases.
 It is assumed that the operating costs of running the database on-premises at the USDF would be covered by existing infrastructure and budget.
@@ -115,16 +116,18 @@ This typically includes monitoring, backup and recovery, and periodic maintenanc
 On-premises deployments would require personnel to manage the low-level infrastructure, while at least some of this burden is shifted to the provider in a cloud deployment.
 Maintenance and development efforts may overlap significantly, especially in the early stages of building out the platform.
 
-.. TODO: Add discussion of database migrations and upgrades
-
-.. TODO: Add discussion of database backups and restoration
+Database migrations, upgrades, and backups are a particularly important aspect of maintenance and can be complicated and time-consuming for large databases.
+For instance, adding columns which calculate new values based on existing data can be quite time-consuming, requiring extensive downtime.
+Backups and restoration may be complicated by data being distributed across multiple nodes, which can complicate these operations significantly.
+Finally, schema migrations on large, distributed databases can be complex and time-consuming, often requiring significant planning and testing to ensure that they are performed correctly.
 
 Developer Effort
 ----------------
 
 Significant development effort on software enhancements may be required, depending on the database platform, including, but not necessarily limited to development of the database schema, data ingestion tools, TAP service, deployment code and monitoring tools.
-The TAP service and data ingestion are discussed as their own requirements, as these are both potentially significant development efforts in and of themselves.
+The TAP service and data ingestion are discussed under their own requirements, as these are both potentially significant development efforts in and of themselves.
 Additionally, some options may require more effort in developer operations (devops) or "configuration as code," especially for on-premises solutions.
+Given the time constraints and the need to have the PPDB operational in a timely manner, the amount of developer effort required to implement the system is a significant factor in the decision of which platform to use.
 
 TAP Service
 -----------
@@ -143,10 +146,10 @@ Implementing these operations can be non-trivial and may require significant dev
 Data Ingestion
 --------------
 
-The PPDB will ingest data from the APDB on a nightly basis and must make this data available for user querying within 24 hours.
+The PPDB will ingest data from the APDB on a nightly basis and must make this data available for user querying within 24 hours, as described in section 3.3 of the *Data Products Definition Document* :cite:`LSE-163`.
 The data ingestion is currently implemented as a long-running "daemon" process which writes Parquet files to disk from the APDB and then copies them over the network to a target PostgreSQL database using the `COPY` command.
-We will primarily consider whether a given platform can support the existing data ingestion tools, and, if not, what additional development effort would be required in order to implement the required functionality.
-The potential performance of data ingestion will be difficult to estimate if there is not an existing solution which can be tested and benchmarked, so this is not specifically considered in this document in terms of comparing the platforms.
+Of primary consideration is whether a given platform can support the existing data ingestion tools, and, if not, what additional development effort would be required in order to implement the required functionality.
+The potential performance of data ingestion is difficult to estimate if there is not an existing solution which can be tested and benchmarked, so this is not used as a point of comparison.
 
 Ecosystem and Community
 -----------------------
@@ -154,6 +157,7 @@ Ecosystem and Community
 The ecosystem and community around the database platform are important factors to consider.
 This includes availability of documentation, tutorials, and support forums, as well as the number of developers and companies using the platform.
 A large ecosystem and community can provide valuable resources and support for developers, as well as a wide range of tools and libraries that can be used to extend the functionality of the database platform.
+Similarly, a lack of timely support can make it difficult to find solutions to problems or to get help when needed.
 
 Database Platforms
 ==================
@@ -227,10 +231,10 @@ The following table provides a comparison of the database platforms based on the
      - :green:`Yes`
 
    * - **Query Performance**
-     - :yellow:`Medium`
+     - :red:`Low`
      - :green:`High`
      - :green:`High`
-     - :green:`High`
+     - :green:`Medium`
      - :green:`Very High`
 
    * - **Query Latency**
@@ -309,25 +313,30 @@ PostgreSQL
 ~~~~~~~~~~
 
 - PostgreSQL can be deployed on-premises at the USDF, where it is currently already being used for development and testing of the PPDB.
-- `CloudNativePG <https://cloudnative-pg.io/>`_ has been used at USDF to deploy PostgreSQL on Kubernetes, including existing PostgreSQL instances used for PPDB development.
+- `CloudNativePG <https://cloudnative-pg.io/>`_ has been used at the USDF to deploy PostgreSQL on Kubernetes, including existing PostgreSQL instances used for PPDB development.
    - This provides a suite of tools for managing PostgreSQL on Kubernetes, including monitoring, backup and recovery, and scaling.
-- Maintenance and administration of PostgreSQL instances seems to be well-understood and managed at the USDF, with a dedicated team of system administrators who manage the infrastructure.
+- Maintenance and administration of PostgreSQL seems to be well-understood and managed at the USDF, with a dedicated team of system administrators who manage the infrastructure.
 
 Citus
 ~~~~~
 
 - Citus would be deployed on-premises at the USDF.
-- No standard Kubernetes operators or Helm charts seem to exist for Citus, or at least none are listed on the `Citus website <https://www.citusdata.com/>`_. These would need to be developed or found and adapted in order to deploy Citus at the USDF on Kubernetes.
-- Hardware requirements would need to be considered for Citus, as it is a distributed database that requires multiple nodes to operate.
-   - Assuming the need to service 20 simultaneous users and therefore concurrent connections, as well as server overhead, a reasonable estimate for the number of vCPUs required per worker would be around 24. PostgreSQL forks a new process for every connection, so this would be approximately a minimum amount of compute for satisfying the requirement.
-   - This configuration is achievable on commodity hardware, but Kubernetes configuration would be required for ensuring that the Citus controller and worker nodes were distributed across multiple physical machines, did not run on the same physical machine, and had sufficient memory and disk I/O to meet the requirements of the PPDB.
+   - Dedicated nodes would be required for the controller and worker nodes, with the controller node acting as a proxy for the worker nodes.
+   - Sufficient memory, CPU, and storage would need to be provisioned for each node to meet the expected data volume and query load.
+- Hardware requirements would need to be carefully considered, as Citus is a distributed database requiring sufficient, provisioned resources to handle system load.
+   - Assuming the need to service 20 simultaneous users and therefore concurrent connections, as well as server overhead, a reasonable estimate for the number of vCPUs per worker would be 24. PostgreSQL forks a new process for every connection, so this would be approximately a minimum amount of compute for satisfying the requirement.
+   - Given that 16-core machines with hyperthreading are relatively common, this configuration is achievable on commodity hardware. But Kubernetes configuration would be required for ensuring that the Citus controller and worker nodes were distributed across multiple physical machines, did not run on the same physical machine, and had sufficient memory and disk I/O to meet the requirements of the PPDB.
    - While SLAC has a large computing cluster dedicated to USDF, it is generally shared amongst many different services and projects, so it is not clear that the necessary resources would be available to deploy Citus on-premises without additional hardware allocation.
+   - The required hardware would need to be purchased and provisioned, which could be a significant limiting factor in deploying Citus on-premises, especially since the scale could be quite large.
+- No standard Kubernetes operators or Helm charts seem to exist for Citus, or at least none are listed on the `Citus website <https://www.citusdata.com/>`_. These would need to be developed or found and adapted in order to deploy Citus at the USDF on Kubernetes.
+
 
 Qserv
 ~~~~~
 
 - Qserv is already deployed on-premises at the USDF.
 - PPDB could be deployed on the same infrastructure as Qserv, and the same team of system administrators could manage both services.
+- However, given that Qserv itself has complex provisioning requirements that are an ongoing challenge to satisfy, an additional requirement of hosting the PPDB on the same infrastructure would be a significant burden.
 
 AlloyDB
 ~~~~~~~
@@ -350,10 +359,10 @@ PostgreSQL
 ~~~~~~~~~~
 
 - PostgreSQL has been used to store PPDB data at the USDF but not at the expected data volumes. At most, a few months of data have been stored, though there is an ongoing system test to generate and store a years worth of data.
-- The PostgreSQL database engine running in a single server mode has a number of inherent limitations which would prevent it from effectively scaling to the required data volumes.
+- The PostgreSQL database engine running in a single server mode has a number of inherent limitations which would prevent it from effectively scaling to the required data volumes of any retention scenario currently being considered.
    - According to its `published limits <https://www.postgresql.org/docs/current/limits.html>`_ , PostgreSQL has a maximum table size of 32 TB, which given an estimated data volume of 70 TB per year, would be exceeded in the first few years of operations.
-   - Though theoretically supporting unlimited database size with table partitioning, practical constraints such as query performance degradation, index management overhead, and maintenance tasks (e.g., vacuum and analyze) make the platform impractical for datasets with a magnitude of hundreds of terabytes.
-   - Backup and restore operations for large datasets (e.g., > 100 TB) become increasingly time-consuming and operationally challenging.
+   - Though theoretically supporting unlimited database size with table partitioning, practical constraints such as query performance degradation, index management overhead, and maintenance tasks (e.g., vacuum and analyze) make the platform impractical for datasets with a magnitude of hundreds of terabytes. Practical experience suggests that the system would actually degrade significantly before coming close to the theoretical limits.
+   - Backup and restore operations for large datasets (e.g., > 100 TB) become increasingly time-consuming and operationally challenging and may actually become technically infeasible at a certain point.
    - Vertical scaling of PostgreSQL is limited by hardware constraints, such as I/O, memory, and CPU, which can be a bottleneck for large datasets.
 - Overall, given these constraints and limitations, **a single PostgreSQL instance cannot scale to the data volume requirements under any retention scenario which is being considered.**
 
@@ -365,6 +374,11 @@ Citus
    - The controller node routes queries to the appropriate worker nodes, which execute the query in parallel and return the results to the controller node for aggregation.
    - To clients, Citus appears as a single PostgreSQL instance, with the controller node acting as a proxy for the worker nodes.
    - These features allow Citus to scale out horizontally to multiple petabytes of data (see `Architecting petabyte-scale analytics by scaling out Postgres on Azure with the Citus extension <https://techcommunity.microsoft.com/blog/adforpostgresql/architecting-petabyte-scale-analytics-by-scaling-out-postgres-on-azure-with-the-/969685>`_ for a case study).
+- Though it can theoretically scale to multiple petabytes, there is a considerable amount of technical work involved in deploying and configuring Citus to achieve this.
+   - The shard count used to partition tables across workers is a settable parameter in Citus, and the number of shards must be carefully chosen to balance query performance and data distribution.
+   - Both the controller and worker nodes must be provisioned with sufficient hardware resources to handle the expected query load and data volume. These would need to be determined through operational testing and benchmarking.
+   - Usage of network file systems can introduce latency and bottlenecks, so local storage is recommended for worker nodes. This would need to be configured and provisioned on dedicated machines and might introduce complications in system maintenance, such as backup and recovery.
+   - The above is not an exhaustive list, as Citus is not a service, but a software extension to PostgreSQL that requires careful configuration and tuning to achieve optimal performance.
 - **Citus should be able to handle the data volume requirements under any retention scenario that is being considered.**
 
 Qserv
@@ -375,12 +389,13 @@ Qserv
    - System tests have been performed with ~40 TB of data, with testing on multi-petabyte data volumes planned for the near future.
    - Dedicated hardware has been purchased for Qserv at USDF, including locally attached SSD storage, to ensure performance is adequate for the expected data volumes.
 - **Qserv should be capable of handling the data volumes expected for the PPDB under any retention scenario being considered.**
+- Similar to Citus, significant technical work is required to deploy and configure Qserv to achieve this, including provisioning of hardware, configuration of the database, and tuning of the system for optimal performance.
 
 AlloyDB
 ~~~~~~~
 
 - AlloyDB has distributed scaling through read replicas, but it has limitations which would prevent it from scaling to the data volumes required for the PPDB.
-   - AlloyDB has a maximum storage capacity of 128 TiB per primary instance, which is insufficient for the 700 TB of data that will be generated over 10 years, and also less than the 140 TB of data projected for 2 years.
+   - AlloyDB has a maximum storage capacity of 128 TiB per primary instance, which is insufficient for the 700 TB of data that will be generated over 10 years, and also less than the 140 TB of data projected for 2 years. While data could be sharded across multiple primary instances, this would introduce complexity and operational overhead.
    - For very large datasets in the hundreds of terabytes, complex analytical queries would likely result in high latency due to the limitations of vertical scaling on the replica nodes and the absence of distributed query execution.
    - Managing backups, replication and recovery at this scale would be complex and challenging, with backup and restore operations for multi-terabyte datasets being time-consuming and operationally challenging. Index maintenance and vacuum operations would also be similarly challenging and time-consuming.
    - Storing hundreds of terabytes on AlloyDB would be expensive, as standard rates per GB hour are high.
@@ -405,7 +420,7 @@ PostgreSQL
 - PostgreSQL has low to medium latency for small to medium datasets, typically ranging from milliseconds to a few seconds for indexed queries
 - However, it struggles with datasets larger than 10-20 TB on a single instance.
    - I/O and memory constraints can become bottlenecks.
-   - Performance degrades with high concurrency or large joins across large tables.
+   - Performance degrades with high concurrency or joins across large tables.
    - Index maintenance and vacuum operations can impact performance on large datasets.
 - Internal benchmarking and testing indicates that query performance scales roughly linearly with data volume, with query times increasing by a factor of 10 for every order of magnitude increase in data volume *DMTN-113* :cite:`DMTN-113`.
    - This implies that performance would degrade significantly as the PPDB grows to hundreds of terabytes.
@@ -434,6 +449,7 @@ Qserv
 - Query performance may degrade under certain circumstances.
    - High latency can be experienced for full table scans.
    - Long-running queries may effect other user's queries, introducing higher latency for those users.
+- Testing shows that Qserv achieves faster results than BigQuery for some queries, in particular spatially oriented searches (see results from `TAP BigQuery <https://docs.google.com/document/d/1CigD-6xJgTWZV82HUEYZBCxhgwfpOHfu8ABwmjLxZ4E>_` by Burwood Group, Inc. for comparison).
 - **Qserv should be able to achieve adequate query performance for the data volumes expected for the PPDB.**
 
 AlloyDB
@@ -449,11 +465,15 @@ BigQuery
 
 - BigQuery is designed for extreme horizontal scalability, and it is very efficient and performant for large-scale analytical queries on petabyte-scale data.
 - Caching mechanisms and optimization techniques can be used to improve query performance.
-   - For instance, BigQuery can cache results of queries for up to 24 hours, which can significantly reduce query latency for repeated queries.
-- BigQuery has high latency for small queries, from several to tens of seconds, due to the serverless nature of the platform, which requires provisioning of resources for each query, as well as optimization and planning within the execution engine.
+   - For instance, BigQuery can cache query results for up to 24 hours, which can significantly reduce latency when returning data to clients.
+- BigQuery can potentially have high latency for small queries, from several to tens of seconds, due to the serverless nature of the platform, which requires provisioning of resources for each query, as well as optimization and planning within the execution engine.
+   - However, some preliminary testing indicates that results on small datasets are returned quickly, with sub-second response times for simple queries.
+   - How this operates at the expected data volumes is not clear; provisioning time could be a significant factor in query latency at scale given that more "slots" would be needed for each query.
 - Performance of spatial queries is not inherently optimized, as BigQuery does not support spatial indexing.
    - However, spatial queries can be optimized by using hierarchical mesh indexing, which can reduce the amount of data scanned by the query engine. This can significantly improve query performance for spatial queries, but it requires additional development effort to implement.
-- Even with these limitations, **BigQuery should be able to achieve high query performance on the expected data volumes, especially for large-scale analytical queries.**
+   - Various techniques could also be developed for optimizing spatial queries on this platform, including use of the `HEALPix <https://healpix.sourceforge.io/>_` algorithm.
+- Even with the above caveats, **BigQuery should be able to achieve high query performance on the expected data volumes, especially for large-scale analytical queries.**
+   - BigQuery is particularly performant on full table scans, which are a common operation for analytical queries.
 
 Scalability
 -----------
@@ -482,6 +502,7 @@ Qserv
 
 - Qserv is designed to scale out horizontally across multiple nodes.
    - Additional nodes can be added to the cluster to increase storage and compute capacity.
+- Sufficient hardware must be provisionined for each node to handle the expected data volume and query load, and elasticity is generally not supported.
 - **It should be able to handle the data volume and query performance requirements of the PPDB.**
 
 .. TODO: Add more on Qserv scalability, possibly with references to system benchmarks and tests, DP and DR catalog sizes, etc.
@@ -519,8 +540,8 @@ Citus
 - Citus would have low operating costs for on-premises deployments, as the overhead of running the database would presumably be covered by existing infrastructure and budget.
 - Cost predictability would be high for on-premises deployments, as the costs are fixed and known in advance.
 - However, Citus would incur much higher hardware costs than a single-node PostgreSQL deployment, as it would require multiple nodes to be provisioned with sufficient memory, CPU, and storage to meet the expected data volume and query load.
-   - This would likely include new hardware purchases, as the existing infrastructure at USDF could likely not support the required number of nodes with the proper hardware configuration.
-   - Lead-in time for hardware procurement and deployment would also need to be considered and could be a significant limiting factor in deploying Citus on-premises.
+   - This would likely include new hardware purchases, as the existing infrastructure at USDF could likely not support the required number of nodes with the proper hardware configuration, especially given that a large number of nodes would need to be exclusively dedicated to Citus.
+   - Lead-in time for hardware procurement and deployment would need to be considered and could be a significant limiting factor in deploying Citus on-premises.
 
 Qserv
 ~~~~~
@@ -528,6 +549,7 @@ Qserv
 - Qserv costs are already included in the USDF budget, as it is used to host the DP and DR catalogs.
 - A hardware cluster has been purchased and configured for Qserv and is already in operation.
 - However, the added load of the PPDB would likely require additional hardware to be purchased, as the existing cluster may not be able to support the expected data volume and query load while also providing access to the DP and DR catalogs.
+- Similar to Citus, hardware purchasing requirements could be a significant limiting factor in deploying Qserv on-premises.
 
 AlloyDB
 ~~~~~~~
@@ -546,14 +568,14 @@ BigQuery
 ~~~~~~~~
 
 - `BigQuery pricing <https://cloud.google.com/bigquery/pricing>`_ has two main components: compute pricing and storage pricing.
-   - Compute pricing includes the cost to process queries, including "SQL queries, user-defined functions, scripts, and certain data manipulation language (DML) and data definition language (DDL) statements."
-   - BigQuery offers two compute pricing models for running queries:
-      - On-demand pricing (per TiB) charges for the amount of data processed by the query, with a minimum of 10 MB per query.
-      - Capacity pricing (per slot-hour) charges for the number of slots used by the query, with a minimum of 100 slots per query, and slots available in increments of 100. Billing is per second with a one-minimum.
-   - Storage pricing is the cost to store data that is loaded into BigQuery.
+- Compute pricing includes the cost to process queries, including "SQL queries, user-defined functions, scripts, and certain data manipulation language (DML) and data definition language (DDL) statements."
+- BigQuery offers two compute pricing models for running queries:
+   - On-demand pricing (per TiB) charges for the amount of data processed by the query, with a minimum of 10 MB per query.
+   - Capacity pricing (per slot-hour) charges for the number of slots used by the query, with a minimum of 100 slots per query, and slots available in increments of 100. Billing is per second with a one-minimum.
+- Storage pricing is the cost to store data that is loaded into BigQuery.
 - BigQuery charges for other operations as well, such as streaming inserts and usage of integrated machine learning tools.
 - Specific costing scenarios are beyond the scope of this document, but it is generally understood that BigQuery can be expensive for large datasets and high query volumes, with low cost predictability due to dynamic resource allocation for every query along with variable pricing.
-- Though the default BigQuery pricing structure would likely result in very high operating costs, it is possible that significant discounts could be negotiated, given the scientific nature of the project.
+- Though the default BigQuery pricing structure would likely result in very high (even prohibitively expensive) operating costs, it is possible that significant discounts could be negotiated, given the scientific nature of the project.
 
 Maintenance Overhead
 --------------------
@@ -575,14 +597,14 @@ Citus
    - Distribution of data across worker nodes can be complex and require manual intervention. Distributed tables can complicate backup and recovery procedures.
    - No official Kubernetes operators or Helm charts are available for Citus, at least not through their official documentation channels, so these would need to be developed to deploy Citus on Kubernetes at the USDF.
    - Procedures and tools for monitoring, backup and recovery, and scaling would need to be developed or adapted.
-- Some significant fraction of a database administrator or similar expert would be required to manage an on-site Citus deployment.
+- Some significant fraction of a database administrator or similar expert would be required to manage an on-site Citus deployment, making this a high-maintenance option.
 
 Qserv
 ~~~~~
 
 - As a distributed database, similar to Citus in many ways, **Qserv has a high maintenance overhead.**
 - Additionally, since Qserv is a custom, in-house platform, it may require more maintenance effort than a more widely-used platform like Citus.
-- Qserv will already be used to host the DP and DR catalogs, and it is unclear whether additional maintenance burden could be managed effectively by existing personnel.
+- Qserv will already be used to host the DP and DR catalogs, and it is unclear whether additional maintenance burden could be managed effectively by existing personnel. It is likely that additional manpower would be required to manage the PPDB on the same infrastructure.
 
 AlloyDB
 ~~~~~~~
@@ -614,14 +636,14 @@ Citus
 ~~~~~
 
 - As a fully compatible PostgreSQL extension, Citus should require relatively low developer effort, as the existing schema and data replication tools are, in theory, fully compatible.
-- However, Citus would require a significant amount of development effort in devops, backup and recovery solutions, and other tools to manage the system.
+- However, Citus would require a significant amount of development effort in devops, backup and recovery solutions, and other tools to manage the system, as mentioned in its maintenance overhead section.
 
 Qserv
 ~~~~~
 
 - Qserv would require very high developer effort, because it lacks some required features, including, but not limited to tooling for data ingestion.
    - Qserv does not support incremental inserts or updates, as it is primarily designed for loading data in bulk. Significant enhancements would be required to support nightly updates from the APDB.
-- Given the existing commitments of the Qserv team, it is not clear that they would be able to devote the necessary resources to develop the required tooling on a reasonable timescale.
+- Given the existing commitments of the Qserv team, it is not clear that they would be able to devote the necessary resources to develop the required tooling on a reasonable timescale. It is likely that additional personnel would be required to develop these tools in a timely manner.
 
 AlloyDB
 ~~~~~~~
@@ -659,14 +681,14 @@ AlloyDB
 
 - While AlloyDB is compatible with PostgreSQL, it does not support PgSphere, which is required for ADQL support in the CADC TAP implementation that has been used for Rubin services in the past.
 - AlloyDB does support the `PostGIS extension <https://postgis.net/>`_, which provides support for geospatial data. However, this does not provide the same functionality as PgSphere. Significant development effort would be needed to implement the required functionality for the TAP service using a PostGIS backend. And it is not clear that this would be feasible given available software development resources and the operational schedule.
-- Additionally, the TAP service would realistically need to be run on GCP, which is certainly possible, but would require additional development effort to deploy and manage.
 
 BigQuery
 ~~~~~~~~
 
 - BigQuery is not compatible with the CADC TAP implementation, so a TAP service would need to be developed.
 - Work has been done in the past to implement a TAP service on top of BigQuery (see `TAP and ADQL on Google’s BigQuery Platform <https://assets.pubpub.org/rynkboj6/71582749259388.pdf#abs287.02>`_).
-- A production TAP service does not currently exist but there is `work in progress <https://github.com/opencadc/tap/pull/172>`_ on adding one to the CADC TAP implementation, as part of Rubin's ongoing work with CADC.
+- A production TAP service does not currently exist but there is `work in progress <https://github.com/opencadc/tap/pull/172>`_ on adding one to the CADC TAP implementation, as part of Rubin's ongoing collaboration with CADC.
+- While some development effort would be required, it is likely that a working TAP service could be implemented on BigQuery.
 
 
 Data Ingestion
@@ -707,9 +729,8 @@ BigQuery
 
 - No existing data ingestion tools exist for BigQuery, as it is not compatible with the existing software.
 - A significant amount of development effort would be required to implement this functionality.
-   - This might take a much different form that the existing tools, as BigQuery is a fully managed service and does not support the same operations as a traditional database.
-   - For instance, data in Parquet format dumped from the APDB might be loaded into Google Cloud Storage, triggering an ETL process that loaded the data, rather than utilizing direct streaming operations as in the current implementation.
-- Not having these tools available would be a significant initial roadblock in implementing the PPDB on BigQuery.
+   - One option would be uploading Parquet files to Google Cloud Storage (GCS) where they could then be ingested by using a BigQuery API.
+- Not having these tools available would be a significant initial roadblock in implementing the PPDB on BigQuery, but it is likely surmountable given enough development effort.
 
 Ecosystem and Community
 -----------------------
@@ -736,7 +757,7 @@ Qserv
 ~~~~~
 
 - As an in-house platform, Qserv has an extremely limited ecosystem and community compared with all of the other platforms.
-   - Documentation is available on the `Qserv website <https://qserv.lsst.io/>`_, but it is not as extensive as that of PostgreSQL or Citus, nor does it appear to be complete.
+   - Documentation is available on the `Qserv website <https://qserv.lsst.io/>`_, but it is not as extensive and complete as that of PostgreSQL or Citus.
    - Qserv only has a handful of deployments, and there are no developers or companies using the platform outside of Rubin.
    - Development relies on a few key individuals, who are heavily subscribed in terms of future commitments to the project and may not have the bandwidth to develop new features or tools.
 - The lack of a wider ecosystem and community could be considered a major limiting factor in terms of platform selection.
@@ -757,68 +778,60 @@ BigQuery
    - Many developers and companies use BigQuery, and there are many support forums available, including the dedicated `BigQuery Slack workspace <https://cloud.google.com/blog/topics/inside-google-cloud/join-the-google-cloud-community-on-slack>`_.
 - The high quality of the available documentation and support could be considered a significant advantage of using BigQuery.
 
-.. Old performance notes
-
-.. PostgreSQL allocates a single process per connection, implying that nodes should be allocated at least 20 vCPUs to meet the requirement, and likely more to handle the overhead of the database, so 24 vCPUs is probably a reasonable estimate.
-.. This is achievable on a single, dedicated node with commodity hardware; for example, 16 physical CPU cores with hyper-threading would translate to 32 vCPUs operating concurrently.
-.. For a single PostgreSQL instance, an allocation of 24 vCPUs would be sufficient to meet the performance requirements in terms of simulataneous users, assuming 20 active connections with several processes dedicated to PostgreSQL overhead.
-.. Similarily, for a Citus deployment, worker nodes would likely need to be allocated a similar number of vCPUs to meet the performance requirements as a single node, as full table scans across all shards would still be required and fairly common.
-.. The Citus controller node would likely need to be allocated a similar number of vCPUs to handle the overhead of managing the worker nodes.
-.. While 20 active queries is considered a minimum requirement, the actual number of queries will likely vary between being very low and very high, depending on the time of day and the number of users accessing the database.
-.. Auto-scaling options would need to be considered in order to handle peak loads, as well as monitoring tools to track the number of active queries and the number of vCPUs in use.
-
 Summary
 =======
 
-It should be clear that there is no clear winner among the database platforms considered, though given the requirements and constraints, several of them can be eliminated entirely as realistic options for addressing the full requirements.
+There is no clear winner across all categories, but several options can be eliminated which do not meet basic requirements.
+
+The following summarizes the findings for each platform:
 
 PostgreSQL
 ----------
 
-- PostgreSQL is an attractive RDMS platform in general, due to its feature set, excellent documentation, and large community. Rubin and SLAC also have extensive experience with PostgreSQL, and the existing PPDB is implemented on this platform.
-- Low development and maintenance effort would be required to implement the PPDB on PostgreSQL, as it has heretofore been the target platform for the PPDB implementation.
-- However, PostgreSQL is not designed to scale out horizontally, and it simply cannot handle the projected data volume and query performance requirements.
-- **A single PostgreSQL server is not a suitable platform for the PPDB and can be eliminated as a longterm viable option.**
+PostgreSQL is an attractive RDMS platform in general, due to its feature set, excellent documentation, and large community. Rubin and SLAC also have extensive experience with PostgreSQL, and the existing PPDB is implemented on this platform.
+Low development and maintenance effort would be required to implement the PPDB on PostgreSQL, as it has heretofore been the target platform for the PPDB implementation.
+However, PostgreSQL is not designed to scale out horizontally, and it simply cannot handle the projected data volume and query performance requirements.
+**A single PostgreSQL server is not a suitable platform for the PPDB and can be eliminated as a longterm viable option.**
 
 Citus
 -----
 
-- Citus brings with it all of the positive features of PostgreSQL, as it is an extension of that platform.
-- Cits is designed to scale out horizontally, and it should be able to handle the data volume and query performance requirements.
-- However, Citus would likely incur very high maintenance overhead, as it requires regular monitoring, backup and recovery, and scaling to meet demand.
-- Running Citus on-premises would require the development of Kubernetes operators or Helm charts, backup and recovery solutions, and other tools to manage the distributed database. This would necessitate a significant amount of development effort.
-- A rough estimation is that at least one FTE or more would be required for the initial build out, testing, and deployment of Citus, and ongoing maintenance would require a significant fraction of time from a database administrator or similar expert.
-- Given these factors, **Citus is a viable option for the PPDB, but the maintenance overhead and effort required to develop configuration and monitoring tools would be considerable and should not be underestimated.**
+Citus brings with it all of the positive features of PostgreSQL, as it is an extension of that platform.
+The platform is designed to scale out horizontally, and it should be able to handle the data volume and query performance requirements.
+However, Citus would likely incur very high maintenance overhead, as it requires regular monitoring, backup and recovery, and scaling to meet demand. USDF personnel also have no experience with this platform and would presumably need to learn how to manage it.
+Running Citus on-premises would require the development of Kubernetes operators or Helm charts, backup and recovery solutions, and other tools to manage the distributed database. This would necessitate a significant amount of development effort upfront.
+A rough estimation is that at least one FTE or more would be required for the initial build out, testing, and deployment of Citus, and ongoing maintenance would require a significant fraction of time from a database administrator or similar expert.
+Given these factors, **Citus is technically a viable option for the PPDB, but the maintenance overhead and effort required to develop configuration and monitoring tools would be considerable and should not be underestimated.**
 
 Qserv
 -----
 
-- Qserv is a distributed database that is designed to scale out horizontally, and it should be able to handle the data volume and query performance requirements of the PPDB.
-- It has been used to host the data previews and will contain multi-petabyte DR catalogs.
-- However, Qserv would require very high developer effort to implement the PPDB, as it is missing many required features, including tooling to ingest data from the APDB.
-- **Qserv is a possibility for hosting the PPDB, but there are significant constraining factors including the high developer effort required to implement the required tooling, a limited developer ecosystem and community, and the existing commitments of the Qserv team.**
+Qserv is a distributed database that is designed to scale out horizontally, and it should be able to handle the data volume and query performance requirements of the PPDB.
+It has been used to host the data previews and will contain multi-petabyte DR catalogs.
+However, Qserv would require very high developer effort, as it is missing many required features, including tooling to ingest data from the APDB.
+**Qserv is a possibility for hosting the PPDB, but there are significant constraining factors including the high developer effort required to implement the required tooling, a limited developer ecosystem and community, and the existing commitments of the Qserv team.**
 
 AlloyDB
 -------
 
-- AlloyDB has an attractive set of features built on top of PostgreSQL, including compatibility with the existing PPDB schema and data replication tools.
-- AlloyDB is designed to scale out horizontally, via read replicas, and so it would perform better than a single node PostgreSQL instance.
-- However, data volume requirements under the proposed scenarios would exceed the maximum storage capacity of AlloyDB, and the platform still has many of the problems associated with a single-node database.
-- **The inability of AlloyDB to scale to the required data volumes makes it an infeasible choice for the PPDB.**
+AlloyDB has an attractive set of features built on top of PostgreSQL, including compatibility with the existing PPDB schema and data replication tools.
+It is designed to scale out horizontally, via read replicas, and so it would perform better than a single node PostgreSQL instance.
+However, data volume requirements under the proposed scenarios would exceed its maximum storage capacity, and the platform still has many of the problems associated with a single-node database.
+**The inability of AlloyDB to scale to the required data volumes makes it an infeasible choice for the PPDB.**
 
 BigQuery
 --------
 
-- BigQuery is a fully managed service with low maintenance overhead, excellent scalability, and good query performance.
-- It is designed for extreme horizontal scalability and can handle petabytes of data, so it should be able to meet the data volume requirements of the PPDB.
-- However, the developer effort required to migrate to this platform is significant, as the existing schema and data replication tools are not compatible.
-- The cost of running the service is unknown, and it is possible that the service could incur high operating costs, which would grow over time with more data and queries.
-- **BigQuery is a good fit in terms of scalability and query performance, but the developer effort required to migrate to this platform is significant, and the cost of running the service is unknown.**
+BigQuery is a fully managed service with low maintenance overhead, excellent scalability, and good query performance.
+It is designed for extreme horizontal scalability and can handle petabytes of data, so it should be able to meet the data volume requirements of the PPDB.
+However, the developer effort required to migrate to this platform is significant, as the existing schema and data replication tools are not compatible.
+The cost of running the service is also unknown, and it is possible that high operating costs would be incurred, which would grow over time with more data and queries.
+**BigQuery is a good fit in terms of scalability and query performance, but the developer effort required to migrate to this platform is significant, and the cost of running the service is unknown.**
 
 Recommendations
 ===============
 
-Given the information which has been presented, the following ordered recommendations are provided:
+With several options eliminated entirely, the following alternatives are recommended:
 
 1. BigQuery
 -----------
@@ -827,16 +840,16 @@ Of all the platforms, BigQuery offers the most attractive featureset in terms of
 It is a fully managed service, with low maintenance overhead, and has excellent scalability and query performance.
 Support could be obtained through Rubin's existing GCP contract, and costs could be negotiated to be more favorable.
 
-A pilot project by Rubin staff used BigQuery as part of *Google Cloud Engagement Results* :cite:`DMTN-125` and reported (tentatively) favorable results.
+A pilot project by Rubin staff used BigQuery as part of *Google Cloud Engagement Results* :cite:`DMTN-125` and reported favorable results.
 
   The results for BigQuery show significant speedups for queries that retrieve a limited number of columns, as expected due to BigQuery’s columnar organization. Spherical geometry primitives were able to be adapted for use in astronomical queries. Proper data organization, in particular clustering the BigQuery tables by spatial index, along with the use of a spatial restriction primitive led to substantial improvements in query time for a near-neighbor query. Retrieval of individual objects was relatively slow, however, due to BigQuery’s startup time and lack of indexing. It seems clear that it is possible, with some work on ADQL (Astronomical Data Query Language) translation and possibly creation of auxiliary tables, for BigQuery to handle the largest-scale catalog queries.
 
-While a TAP service does not currently exist, one is under development by the CADC TAP team, and it is likely that this could be adapted to run on BigQuery once it is complete.
+While a TAP service does not currently exist, one is under development, and it is likely that this could be adapted to run on BigQuery once it is complete.
 Data ingestion tools would also need to be written, but this should be a relatively straightforward process, as BigQuery has a well-documented API and many libraries available for interacting with the service.
 
 Overall, while still requiring significant up-front development effort, BigQuery represents the best choice out of the available options for hosting a database at the required scale and query performance, with a minimum maintenance overhead.
-
-.. Finally, strategic considerations related to the broader astronomical community and the hosting of massive datasets in the cloud should be considered.
+This option also opens up possibilities for other institutions and individuals to access the data and pay for their own queries, which could be a significant advantage in the future.
+Finally, the longevity of the platform would be improved compared to in-house options that might become technically obsolete or unsupported in the future.
 
 2. Citus
 --------
@@ -872,11 +885,12 @@ Vertical scaling could be used to address performance requirements initially.
 This scheme would at least provide a working system that would allow the PPDB to be operational in a timely manner.
 
 However, there are major issues with this approach, as PostgreSQL may struggle with query loads at a much lower data volume than would be expected even just for the first few months of operations.
-Certainly, after several months of operations when the data volume is expected to exceed 100 TB, the system would likely be unable to handle the query load without unacceptable latency.
+Certainly, after several months of operations when the data volume is expected to exceed 100 TB, the system would likely be unable to handle the user query load without unacceptable latency.
 Vertical scaling or other stopgap measures would only be able to address this issue for a limited time, and the system would likely need to be replaced or significantly reconfigured well within a year of deployment, and likely much sooner.
 
 .. _DMTN-113: https://dmtn-113.lsst.io
 .. _DMTN-125: https://dmtn-125.lsst.io
+.. _DMTN-135: https://dmtn-135.lsst.io
 .. _DMTN-268: https://dmtn-268.lsst.io
 .. _DMTN-293: https://dmtn-293.lsst.io
 .. _LSE-61: https://ls.st/LSE-61
